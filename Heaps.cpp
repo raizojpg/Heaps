@@ -23,8 +23,7 @@ std::ofstream heapout("heapout.txt");
 
 // vector with pairs ( N, MAX ) 
 std::vector<std::pair<int, long long int>> tests;
-long long int nr_of_tests, n;
-long long int maxi;
+long long int nr_of_tests;
 
 class HeapBase {
 public:
@@ -33,6 +32,7 @@ public:
 	virtual void insert(int value) = 0;
 	virtual void pop() = 0;
 	virtual bool empty() = 0;
+	virtual ~HeapBase() = default;
 };
 
 namespace Heap {
@@ -92,6 +92,8 @@ namespace Heap {
 			if (heap.size() == 1) { return true; }
 			else { return false; }
 		}
+
+		~Heap() override = default;
 
 	};
 
@@ -178,7 +180,10 @@ namespace Fibonacci {
 				node->parent = nullptr;
 				node->left = nullptr;
 				node->right = nullptr;
-				if (node->degree == max_degree) { setMaxDegree(); }
+				if (node->degree == max_degree) { 
+					//setMaxDegree(); 
+					max_degree--;
+				}
 			}
 		}
 
@@ -217,10 +222,8 @@ namespace Fibonacci {
 				FibNode* ptr = head;
 				while (ptr != nullptr) {
 					std::cout << ptr->value << " ";
-					//ptr->child->print();
 					ptr = ptr->right;
 				}
-				std::cout << std::endl;
 			}
 			else {
 				//std::cout<<"Heap is empty\n";
@@ -272,7 +275,7 @@ namespace Fibonacci {
 		}
 
 		void consolidate() {
-			int size = std::max(roots->max_degree, roots->size);
+			int size = std::max(roots->max_degree + 1, roots->size);
 			std::vector<FibNode*> freq(size + 1, 0);
 			FibNode* node = roots->head;
 			min = node;
@@ -318,271 +321,105 @@ namespace Fibonacci {
 			}
 		}
 
-		/*
 		void decreaseKey(FibNode* node, int value) {
 			node->value = value;
 			if (min == nullptr || value < min->value) { min = node; }
 			FibNode* parent = node->parent;
 			if (parent != nullptr && parent->value > node->value) {
 				node->parent = nullptr;
-				roots.push_back(node);
-				//parent->child.remove(node);
-				while (parent->marked && parent != nullptr) {
-					roots.push_back(parent);
-					FibNode* aux = parent;
-					parent = parent->parent;
-					aux->parent = nullptr;
+				parent->child->erase(node);
+				roots->push_back(node);
+				while (parent != nullptr && parent->marked) {
+					node = parent;
+					parent = node->parent;
+					node->parent = nullptr;
+					parent->child->erase(node);
+					roots->push_back(node);
 				}
-				if (parent != nullptr) {
+				if (parent != nullptr && parent->parent != nullptr) {
 					parent->marked = true;
 				}
 			}
 		}
-		*/
-
+		
 		bool empty() override { return roots->empty(); }
 
-		void print() { roots->print(); }
-
-		~FibHeap() {
-			delete roots;
-		}
-	};
-
-
-}
-
-namespace old {
-	class FibNode {
-	public:
-		int value;
-		FibNode* parent;
-		FibNode* left;
-		FibNode* right;
-		std::vector<FibNode*> child;
-		int degree; // size of child list
-		bool marked;
-
-		FibNode() {
-			value = 0;
-			parent = nullptr;
-			left = nullptr;
-			right = nullptr;
-			degree = 0;
-			marked = false;
-		}
-
-		FibNode(int val) {
-			FibNode();
-			value = val;
-		}
-	};
-
-	class List {
-	public:
-		int max_degree;
-		int size;
-		FibNode* head;
-		FibNode* tail;
-
-		List() {
-			max_degree = 0;
-			size = 0;
-			head = nullptr;
-			tail = nullptr;
-		}
-
-		void setMaxDegree() {
-			FibNode* ptr = head;
+		void print() {
+			FibNode* ptr = roots->head;
 			while (ptr != nullptr) {
-				if (ptr->degree > max_degree) { max_degree = ptr->degree; }
+				std::cout << "\nRoot\t\t   " << ptr->value << "\n";
+				if (ptr->child != nullptr) {
+					std::cout << "\t\t";
+					ptr->child->print();
+					std::cout << "\n\t    ";
+					FibNode* child_ptr = ptr->child->head;
+					while (child_ptr != nullptr) {
+						if (child_ptr->child != nullptr) {
+							child_ptr->child->print();
+						}
+						std::cout << "  \t  ";
+						child_ptr = child_ptr->right;
+					}
+					std::cout << "\n";
+				}
 				ptr = ptr->right;
 			}
-
 		}
 
-		void push_back(FibNode* node) {
-			size++;
-			if (tail == nullptr) {
-				head = node;
-				tail = node;
-			}
-			else {
-				tail->right = node;
-				node->left = tail;
-				tail = node;
-			}
-			if (node->degree > max_degree) { max_degree = node->degree; }
-		}
-
-		void erase(FibNode* node) {
-			if (node != nullptr) {
-				size--;
-				FibNode* prev = node->left;
-				FibNode* next = node->right;
-				if (prev != nullptr) { prev->right = next; }
-				else { head = next; }
-				if (next != nullptr) { next->left = prev; }
-				else { tail = prev; }
-				node->parent = nullptr;
-				node->left = nullptr;
-				node->right = nullptr;
-				if (node->degree == max_degree) { setMaxDegree(); }
-			}
-		}
-
-		bool empty() {
-			if (head == nullptr) { return true; }
-			//if (size == 0) { return true; }
-			return false;
-		}
-
-		void print() {
-			if (head != nullptr) {
-				FibNode* ptr = head;
-				while (ptr != nullptr) {
-					std::cout << ptr->value << " ";
-					//ptr->child->print();
-					ptr = ptr->right;
-				}
-				std::cout << std::endl;
-			}
-			else {
-				//std::cout<<"Heap is empty\n";
-			}
-		}
-	};
-
-	class FibHeap {
-	public:
-		List roots;
-		FibNode* min;
-
-		FibHeap() { min = nullptr; }
-
-		int getMin() { return min->value; }
-
-		void findMin() {
-			min = roots.head;
-			if (min != nullptr) {
-				FibNode* ptr = roots.head->right;
-				while (ptr != nullptr) {
-					if (ptr->value < min->value) {
-						min = ptr;
-					}
-					ptr = ptr->right;
-				}
-			}
-		}
-
-		void insert(int value) {
-			FibNode* ptr = new FibNode(value);
-			roots.push_back(ptr);
-			if (min == nullptr || value < min->value) { min = ptr; }
-		}
-
-		void merge(FibHeap* other) {
-			if (other != nullptr) {
-				roots.size += other->roots.size;
-				roots.tail->right = other->roots.head;
-				other->roots.head->left = roots.tail;
-				roots.tail = other->roots.tail;
-				if (other->min->value < min->value) { min = other->min; }
-			}
-		}
-
-		void consolidate() {
-			int size = std::max(roots.max_degree, roots.size);
-			std::vector<FibNode*> freq(size + 1, 0);
-			FibNode* node = roots.head;
-			min = node;
-			while (node != nullptr) {
-				//std::cout << node->value << " ";
-				if (freq[node->degree] == nullptr || freq[node->degree] == node) {
-					if (node->value < min->value) { min = node; }
-					freq[node->degree] = node;
-					node = node->right;
-				}
-				else {
-					FibNode* other = freq[node->degree];
-					if (node->value < other->value) {
-						roots.erase(other);
-						node->child.push_back(other);
-						other->parent = node;
-					}
-					else {
-						roots.erase(node);
-						other->child.push_back(node);
-						node->parent = other;
-						node = other;
-					}
-					freq[node->degree] = nullptr;
-					node->degree++;
-					if (node->degree > roots.max_degree) { roots.max_degree = node->degree; }
-				}
-			}
-			/*
-			for (int i = 0; i < freq.size(); i++) {
-				std::cout << freq[i] << " ";
-			}
-			std::cout << std::endl;
-			*/
-		}
-
-		void pop() {
-			if (min != nullptr) {
-				for (FibNode* child : min->child) {
-					roots.push_back(child);
-				}
-				roots.erase(min);
-				delete min;
-				//findMin();
-				consolidate();
-				//findMin(); //cred ca asta e irelevant
-			}
-		}
-
-		void decreaseKey(FibNode* node, int value) {
-			node->value = value;
-			if (min == nullptr || value < min->value) { min = node; }
-			FibNode* parent = node->parent;
-			if (parent != nullptr && parent->value > node->value) {
-				node->parent = nullptr;
-				roots.push_back(node);
-				//parent->child.remove(node);
-				while (parent->marked && parent != nullptr) {
-					roots.push_back(parent);
-					FibNode* aux = parent;
-					parent = parent->parent;
-					aux->parent = nullptr;
-				}
-				if (parent != nullptr) {
-					parent->marked = true;
-				}
-			}
-		}
-
-		bool empty() { return roots.empty(); }
-
-		void print() {
-			roots.print();
-		}
-
-		void clear() {
-			FibNode* ptr = roots.head->right;
+		void print_bfs() {
+			int lvl;
+			std::queue<std::pair<FibNode*, int>> q;
+			FibNode* ptr = roots->head;
+			std::cout << "\nRoots : ";
 			while (ptr != nullptr) {
-				std::cout << "Deleting " << ptr->left->value << "\n";
-				delete ptr->left;
+				std::cout << ptr->value << " ";
+				q.push({ ptr, 1 });
 				ptr = ptr->right;
 			}
-			std::cout << "Deleting " << roots.tail->value << "\n";
-			delete roots.tail;
-			roots.head = nullptr;
-			roots.tail = nullptr;
+			while (!q.empty()) {
+				ptr = q.front().first;
+				lvl = q.front().second;
+				q.pop();
+				if (ptr->child != nullptr) {
+					std::cout << "\nLvl " << lvl << " parent " << ptr->value << " : ";
+					FibNode* ptr_child = ptr->child->head;
+					while (ptr_child != nullptr) {
+						std::cout << ptr_child->value << " ";
+						q.push({ ptr_child,lvl + 1 });
+						ptr_child = ptr_child->right;
+					}
+				}
+			}
+			std::cout << "\n";
 		}
 
+		~FibHeap() override {delete roots;}
 	};
 
+	void tests() {
+		FibHeap fib;
+		int x;
+		while (fin >> x) {
+			fib.insert(x);
+		}
+		int ct = 0;
+		while (!fib.empty()) {
+			ct++;
+			std::cout << fib.getMin()<<" => "<<ct << "\n\n";
+			fib.pop();
+			fib.print_bfs();
+
+			if (ct == 2) {
+				fib.decreaseKey(fib.roots->head->child->head->right->right->child->head, -30);
+				fib.decreaseKey(fib.roots->head->child->head->right->right->child->head, -20);
+				fib.print_bfs();
+				while (true) {
+					
+					
+				}
+			}
+		}
+	}
 
 }
 
@@ -736,9 +573,7 @@ namespace Heap23{
 
 		}
 
-		~TwoThreeHeap() {
-			delete[] trees;
-		}
+		~TwoThreeHeap() override {delete[] trees;}
 
 		void test() { std::cout << "23\n"; }
 
@@ -1041,7 +876,99 @@ void probe_3(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	}
 }
 
+void probe_4(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+	heap.test();
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
 
+		for (unsigned long long int i = 0; i < numbers.size(); i++) {
+			heap.insert(numbers[i]);
+			output_heap.push_back(heap.getMin());
+			if (i % 100 == 1) {
+				heap.pop();
+			}
+		}
+		while (!heap.empty()) {
+			output_heap.push_back(heap.getMin());
+			heap.pop();
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << name << " time: " << duration.count() << " miliseconds\n";
+
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+	heap.test();
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+
+		for (unsigned long long int i = 0; i < numbers.size(); i++) {
+			heap.insert(numbers[i]);
+			output_heap.push_back(heap.getMin());
+			if (i % 100 == 1) {
+				for (int j = 0; j < 10; j++) {
+					heap.pop();
+				}
+			}
+		}
+		while (!heap.empty()) {
+			output_heap.push_back(heap.getMin());
+			heap.pop();
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << name << " time: " << duration.count() << " miliseconds\n";
+
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+	heap.test();
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+
+		for (unsigned long long int i = 0; i < numbers.size(); i++) {
+			heap.insert(numbers[i]);
+			output_heap.push_back(heap.getMin());
+			if (i % 100 == 1) {
+				for (int j = 0; j < 100; j++) {
+					heap.pop();
+				}
+			}
+		}
+		while (!heap.empty()) {
+			output_heap.push_back(heap.getMin());
+			heap.pop();
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << name << " time: " << duration.count() << " miliseconds\n";
+
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
 
 // we take a function pointer to a probe as an argument
 void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&, HeapBase&), std::vector<int>& numbers) {
@@ -1062,7 +989,6 @@ void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&,
 
 
 void compareHeaps(unsigned long long int n, int maxi) {
-	// generate random numbers
 	std::vector<int> numbers = generateRandomI(n, maxi); // will be random numbers
 	
 	out << "\nProbe 1\n";
@@ -1071,6 +997,12 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	init_probe(probe_2, numbers);
 	out << "\nProbe 3\n";
 	init_probe(probe_3, numbers);
+	out << "\nProbe 4\n";
+	init_probe(probe_4, numbers);
+	out << "\nProbe 5\n";
+	init_probe(probe_5, numbers);
+	out << "\nProbe 6\n";
+	init_probe(probe_6, numbers);
 }
 
 
@@ -1089,25 +1021,10 @@ int main() {
 	return 0;
 	*/
 
-	//intra in roots noduri fara vecini si cu parinti nush dc
-	
-	/*
-	Fibonacci::FibHeap fib;
-	int x;
-	while (fin >> x) {
-		fib.insert(x);
-	}
-	int ct = 0;
-	while (!fib.empty()) {
-		ct++;
-		std::cout << fib.getMin()<<" => "<<ct << "\n\n";
-		fib.pop();
-		fib.print();
 
-	}
+	//Fibonacci::tests();
+	//return 0;
 
-	return 0;
-	*/
 
 	unsigned long long int n;
 	int maxi;
