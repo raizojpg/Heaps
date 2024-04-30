@@ -11,14 +11,13 @@
 #include <algorithm> // for default sort
 #include <random>	// for random
 #include <chrono>  // for time
-#include<math.h>  // log
-#include<limits>
+#include <math.h>  // log
+#include <limits>
 
 std::ifstream fin("nr.txt");
 std::ifstream in("tests.txt");
-std::ofstream out("results.txt");
+std::ofstream out("results4.txt");
 std::ofstream heapout("heapout.txt");
-
 
 
 // vector with pairs ( N, MAX ) 
@@ -36,7 +35,6 @@ public:
 };
 
 namespace Heap {
-
 
 	class Heap : public HeapBase {
 	private:
@@ -91,6 +89,13 @@ namespace Heap {
 		bool empty() override {
 			if (heap.size() == 1) { return true; }
 			else { return false; }
+		}
+
+		void merge(Heap& other) {
+			while (!other.empty()) {
+				this->insert(other.getMin());
+				other.pop();
+			}
 		}
 
 		~Heap() override = default;
@@ -229,8 +234,6 @@ namespace Fibonacci {
 				//std::cout<<"Heap is empty\n";
 			}
 		}
-
-
 
 	};
 
@@ -424,19 +427,18 @@ namespace Fibonacci {
 }
 
 namespace Heap23{
-	
+
 	class Node {
 		friend class TwoThreeHeap;
-		friend int mergeNodes(Node** a, Node** b);
 
 	public:
 		Node(int key, int value) :
-			child(NULL),
-			left(NULL),
-			right(NULL),
-			parent(NULL),
-			partner(NULL),
-			extra(NULL),
+			child(nullptr),
+			left(nullptr),
+			right(nullptr),
+			parent(nullptr),
+			partner(nullptr),
+			extra(nullptr),
 			dim(0), // nr of children
 			key_(key),
 			value_(value) {}
@@ -461,8 +463,84 @@ namespace Heap23{
 			node->parent = this;
 		}
 
+		static int mergeNodes(Node** a, Node** b) {
+			Node* tree;
+			Node* nextTree;
+			Node* other;
+			Node* nextOther;
+			int c = 0;
+
+			if ((*a)->priority() <= (*b)->priority()) {
+				tree = (*a);
+				other = (*b);
+			}
+			else {
+				tree = (*b);
+				other = (*a);
+			}
+			c++;
+
+			nextTree = tree->partner;
+			nextOther = other->partner;
+
+			if (!nextTree) {
+				if (nextOther) {
+					tree->addChild(other);
+					tree->dim++;
+					(*a) = nullptr;
+					(*b) = tree;
+				}
+				else {
+					tree->partner = other;
+					other->partner = tree;
+					other->extra = true;
+
+					(*a) = tree;
+					(*b) = nullptr;
+				}
+			}
+			else if (!nextOther) {
+				tree->partner = nullptr;
+				other->partner = nextTree;
+				nextTree->partner = other;
+
+				if (other->priority() < nextTree->priority()) {
+					tree->addChild(other);
+				}
+				else {
+					nextTree->extra = false;
+					other->extra = true;
+					tree->addChild(nextTree);
+				}
+
+				(tree->dim)++;
+				c++;
+
+				(*a) = nullptr;
+				(*b) = tree;
+			}
+			else {
+				tree->partner = nullptr;
+				nextTree->partner = nullptr;
+				nextTree->extra = false;
+				nextTree->left = nextTree;
+				nextTree->right = nextTree;
+				nextTree->parent = nullptr;
+
+				tree->addChild(other);
+				(tree->dim)++;
+
+				(*a) = nextTree;
+				(*b) = tree;
+			}
+			return c;
+		}
+
 		void removeChild(Node* node) {
-			if (node->dim) { // we have at least one child
+			Node* left;
+			Node* right;
+
+			if (node->dim) {
 				left = node->left;
 				right = node->right;
 				left->right = right;
@@ -470,7 +548,28 @@ namespace Heap23{
 				child = left;
 			}
 			else {
-				child = NULL;
+				child = nullptr;
+			}
+		}
+
+		void replaceChild(Node* newNode) {
+			Node* l;
+			Node* r = right;
+
+			if (r == this) {
+				newNode->right = newNode;
+				newNode->left = newNode;
+			}
+			else {
+				l = left;
+				l->right = newNode;
+				r->left = newNode;
+				newNode->left = l;
+				newNode->right = r;
+			}
+			newNode->parent = parent;
+			if (parent->child == this) {
+				parent->child = newNode;
 			}
 		}
 
@@ -486,104 +585,28 @@ namespace Heap23{
 		int value_;
 	};
 
-	int mergeNodes(Node** a, Node** b) {
-		Node* tree;
-		Node* nextTree;
-		Node* other;
-		Node* nextOther;
-		int c = 0;
-
-		if ((*a)->priority() <= (*b)->priority()) {
-			tree = (*a);
-			other = (*b);
-		}
-		else {
-			tree = (*b);
-			other = (*a);
-		}
-		c++;
-
-		nextTree = tree->partner;
-		nextOther = other->partner;
-
-		if (!nextTree) {
-			if (nextOther) {
-				tree->addChild(other);
-				tree->dim++;
-				(*a) = NULL;
-				(*b) = tree;
-			}
-			else {
-				tree->partner = other;
-				other->partner = tree;
-				other->extra = true;
-
-				(*a) = tree;
-				(*b) = NULL;
-			}
-		}
-		else if (!nextOther) {
-			tree->partner = NULL;
-			other->partner = nextTree;
-			nextTree->partner = other;
-
-			if (other->priority() < nextTree->priority()) {
-				tree->addChild(other);
-			}
-			else {
-				nextTree->extra = false;
-				other->extra = true;
-				tree->addChild(nextTree);
-			}
-
-			(tree->dim)++;
-			c++;
-
-			(*a) = NULL;
-			(*b) = tree;
-		}
-		else {
-			tree->partner = NULL;
-			nextTree->partner = NULL;
-			nextTree->extra = false;
-			nextTree->left = nextTree;
-			nextTree->right = nextTree;
-			nextTree->parent = NULL;
-
-			tree->addChild(other);
-			(tree->dim)++;
-
-			(*a) = nextTree;
-			(*b) = tree;
-		}
-		return c;
-	}
-
 
 	class TwoThreeHeap : public HeapBase {
 	public:
-		TwoThreeHeap(int max_nodes = 100) : nrNodes(0), value(0) {
+		TwoThreeHeap(int max_nodes = 1000000000) : nrNodes(0), value(0) {
 
 			max_trees_ = (int)(0.5 + std::log(max_nodes + 1) / std::log(2.0));
 			trees = new Node * [max_trees_];
 
 			for (int i = 0; i < max_trees_; ++i) {
-				trees[i] = NULL;
+				trees[i] = nullptr;
 			}
 
 		}
 
 		~TwoThreeHeap() override {delete[] trees;}
 
-		void test() { std::cout << "23\n"; }
-
 		void insert(int value) override {
 			int key = value;
 			Node* node = new Node(key, value);
 			meld(node); // Meld the new node into the heap
 			nrNodes++; // Increment the number of nodes in the heap
-			//return node; // Return a pointer to the inserted node
-
+			//return node;
 		}
 
 		Node* mini() {
@@ -602,6 +625,7 @@ namespace Heap23{
 
 			minNode = trees[rank];
 			key1 = minNode->priority();
+			
 			while (rank > 0) {
 				rank--;
 				next = trees[rank];
@@ -613,58 +637,55 @@ namespace Heap23{
 					}
 				}
 			}
-			return minNode;
+			return minNode; // returns a pointer to the minimum value
 		}
 
-		int getMin() override  {
-			return this->mini()->value();
-		}
+		int getMin() override {return this->mini()->value();}
 
-		bool empty() override {
-			return nrNodes == 0;
-		}
+		bool empty() override {return nrNodes == 0;}
 
 		void pop() override  {
-			Node* child;
-			Node* next;
-			Node* partner;
-			Node* minNode;
-			minNode = mini();
+			if (nrNodes != 0) {
+				Node* child;
+				Node* next;
+				Node* partner;
+				Node* minNode;
+				minNode = mini();
 
-			int rank = minNode->dim; // nr of children of minNode
+				int rank = minNode->dim; // nr of children of minNode
 
-			partner = minNode->partner;
-			if (partner) {
-				partner->partner = NULL;
-				partner->extra = false;
-				partner->parent = NULL;
-				partner->left = partner;
-				partner->right = partner;
-				trees[rank] = partner;
-			}
-			else {
-				trees[rank] = NULL;
-				value -= (1 << rank);
-			}
-			nrNodes--;
+				partner = minNode->partner;
+				if (partner) {
+					partner->partner = nullptr;
+					partner->extra = false;
+					partner->parent = nullptr;
+					partner->left = partner;
+					partner->right = partner;
+					trees[rank] = partner;
+				}
+				else {
+					trees[rank] = nullptr;
+					value -= (1 << rank);
+				}
+				nrNodes--;
 
-			child = minNode->child;
-			if (child) {
-				next = child->right;
-				next->left = NULL;
-				child->right = NULL;
-				meld(next);
+				child = minNode->child;
+				if (child) {
+					next = child->right;
+					next->left = nullptr;
+					child->right = nullptr;
+					meld(next);
+				}
 			}
-			//return minNode;
 		}
 
 		bool merge(TwoThreeHeap& heap) {
 			for (int i = 0; i < heap.max_trees_; ++i) {
-				if (heap.trees[i] != NULL) {
-					heap.trees[i]->right = NULL; // disconnect the three from the heap
-					heap.trees[i]->left = NULL;
+				if (heap.trees[i] != nullptr) {
+					heap.trees[i]->right = nullptr; // disconnect the three from the heap
+					heap.trees[i]->left = nullptr;
 					meld(heap.trees[i]);
-					heap.trees[i] = NULL;
+					heap.trees[i] = nullptr;
 				}
 			}
 			nrNodes += heap.nrNodes;
@@ -672,47 +693,248 @@ namespace Heap23{
 			return true; // the merge was successful
 		}
 
+		void remove(Node* node) {
+			Node* p, * middle, * extraNodeLeft, * extraNodeRight, * extraNodeParentLeft,
+				* extraNodeParentRight, * extraNodeFirstChild,
+				* parentOfExtraNodeLeft, * parentOfExtraNodeRight,
+				* leftSibling, * rightSibling;
+
+			Node* nodePartner = node->partner;
+			int d;
+
+			if (node->extra) { // if the node is extra we just disconnect it 
+				node->partner->partner = nullptr;
+				node->partner = nullptr;
+				node->extra = false;
+			}
+			else if (nodePartner) {
+				nodePartner->partner = nullptr;
+				node->partner = nullptr;
+				nodePartner->extra = false;
+
+				node->replaceChild(nodePartner);
+			}
+			else {
+				middle = node->right;
+				if (middle->dim) {
+					extraNodeLeft = nullptr;
+					extraNodeParentLeft = nullptr;
+					extraNodeRight = middle->child->partner;
+					if (extraNodeRight) {
+						extraNodeParentRight = nullptr;
+					}
+					else {
+						extraNodeParentRight = middle->child;
+					}
+				}
+				else {
+					middle = node->parent;
+					if (middle->extra) {
+						extraNodeRight = nullptr;
+						extraNodeParentRight = nullptr;
+						middle = middle->partner;
+						extraNodeLeft = middle->child->partner;
+						if (extraNodeLeft) {
+							extraNodeParentLeft = nullptr;
+						}
+						else {
+							extraNodeParentLeft = middle->child;
+						}
+					}
+					else {
+						if (middle->parent) {
+							extraNodeLeft = middle->left->partner;
+							if (extraNodeLeft) {
+								extraNodeParentLeft = nullptr;
+							}
+							else {
+								extraNodeParentLeft = middle->left;
+							}
+						}
+						else {
+							extraNodeLeft = nullptr;
+							extraNodeParentLeft = nullptr;
+						}
+						middle = middle->partner;
+						if (middle) {
+							extraNodeRight = middle->child->partner;
+							if (extraNodeRight) {
+								extraNodeParentRight = nullptr;
+							}
+							else {
+								extraNodeParentRight = middle->child;
+							}
+						}
+						else {
+							extraNodeRight = nullptr;
+							extraNodeParentRight = nullptr;
+						}
+
+					}
+				}
+
+				if (extraNodeRight) {
+					extraNodeRight->partner->partner = nullptr;
+					extraNodeRight->partner = nullptr;
+					extraNodeRight->extra = false;
+
+					node->replaceChild(extraNodeRight);
+				}
+				else if (extraNodeParentRight) {
+					extraNodeFirstChild = extraNodeParentRight->parent;
+
+					remove(extraNodeFirstChild);
+					extraNodeFirstChild->removeChild(extraNodeParentRight);
+					extraNodeParentRight->partner = extraNodeFirstChild;
+					extraNodeFirstChild->partner = extraNodeParentRight;
+					extraNodeParentRight->extra = true;
+					extraNodeFirstChild->dim = node->dim;
+
+					node->replaceChild(extraNodeFirstChild);
+				}
+				else if (extraNodeLeft) {
+					p = node->parent;
+					parentOfExtraNodeRight = extraNodeLeft->partner;
+					parentOfExtraNodeLeft = parentOfExtraNodeRight->parent;
+
+					p->removeChild(node);
+
+					extraNodeLeft->partner = nullptr;
+					extraNodeLeft->extra = false;
+
+					d = parentOfExtraNodeRight->dim;
+					parentOfExtraNodeRight->dim = p->dim;
+					p->dim = d;
+
+					parentOfExtraNodeRight->addChild(extraNodeLeft);
+
+					if (p->extra) {
+						p->partner = nullptr;
+						p->extra = false;
+
+						parentOfExtraNodeRight->partner = parentOfExtraNodeLeft;
+						parentOfExtraNodeLeft->partner = parentOfExtraNodeRight;
+						parentOfExtraNodeRight->extra = true;
+						parentOfExtraNodeRight->replaceChild(p);
+					}
+					else {
+						parentOfExtraNodeRight->partner = nullptr;
+						leftSibling = parentOfExtraNodeRight->left;
+						if (leftSibling != p) {
+							rightSibling = p->right;
+							p->left = leftSibling;
+							parentOfExtraNodeRight->right = rightSibling;
+							p->right = parentOfExtraNodeRight;
+							parentOfExtraNodeRight->left = p;
+							leftSibling->right = p;
+							rightSibling->left = parentOfExtraNodeRight;
+
+							if (parentOfExtraNodeLeft->child == p) {
+								parentOfExtraNodeLeft->child = parentOfExtraNodeRight;
+							}
+
+						}
+						else {
+							parentOfExtraNodeLeft->child = parentOfExtraNodeRight;
+						}
+					}
+
+				}
+				else if (extraNodeParentLeft) {
+					p = node->parent;
+					p->removeChild(node);
+					remove(p);
+					p->dim = node->dim;
+					p->partner = extraNodeParentLeft;
+					extraNodeParentLeft->partner = p;
+
+					if (p->priority() < extraNodeParentLeft->priority()) {
+						p->extra = false;
+						extraNodeParentLeft->replaceChild(p);
+						extraNodeParentLeft->extra = true;
+					}
+					else {
+						p->extra = true;
+					}
+				}
+				else {
+					d = node->dim;
+					p = node->parent;
+
+					p->removeChild(node);
+
+					trees[d + 1] = nullptr;
+					value -= (1 << (d + 1));
+					p->dim = d;
+
+					p->left = nullptr;
+					p->right = nullptr;
+					meld(p);
+				}
+
+			}
+
+		}
+
+		void decreaseKey(Node* node, int newKey) {
+			node->key_ = newKey;
+			node->value_ = newKey;
+
+			if (!(node->parent || node->extra)) {
+				return;
+			}
+
+			remove(node);
+			node->right = nullptr;
+			node->left = nullptr;
+
+			meld(node);
+		}
+
+		void test() { std::cout << "23\n"; }
+
 	protected:
 		void meld(Node* list) {
 			Node* next;
-			Node* add_tree;
-			Node* carry_tree;
+			Node* addTree;
+			Node* carryTree;
 			int d;
 
-			next = NULL;
-			add_tree = list;
-			carry_tree = NULL;
+			next = nullptr;
+			addTree = list;
+			carryTree = nullptr;
 
 			do {
-				if (add_tree) {
-					next = add_tree->right;
-					add_tree->right = add_tree->left = add_tree;
-					add_tree->parent = NULL;
+				if (addTree) {
+					next = addTree->right;
+					addTree->right = addTree;
+					addTree->left = addTree;
+					addTree->parent = nullptr;
 				}
 				else {
-					add_tree = carry_tree;
-					carry_tree = NULL;
+					addTree = carryTree;
+					carryTree = nullptr;
 				}
 
-				if (carry_tree) {
-					mergeNodes(&add_tree, &carry_tree);
+				if (carryTree) {
+					Node::mergeNodes(&addTree, &carryTree);
 				}
 
-				if (add_tree) {
-					d = add_tree->dim;
+				if (addTree) {
+					d = addTree->dim;
 					if (trees[d]) {
-						mergeNodes(&trees[d], &add_tree);
+						Node::mergeNodes(&trees[d], &addTree);
 						if (!trees[d]) value -= (1 << d);
-						carry_tree = add_tree;
+						carryTree = addTree;
 					}
 					else {
-						trees[d] = add_tree;
+						trees[d] = addTree;
 						value += (1 << d);
 					}
 				}
 
-				add_tree = next;
-			} while (add_tree || carry_tree);
+				addTree = next;
+			} while (addTree || carryTree);
 		}
 
 	private:
@@ -720,12 +942,7 @@ namespace Heap23{
 		int max_trees_;
 		int nrNodes;
 		int value;
-
-
 	};
-
-
-
 
 }
 
@@ -744,18 +961,6 @@ std::vector<int> generateRandomI(unsigned long long n, int maxi) {
 	std::random_device rd;  // Seed for the random number generator
 	std::mt19937 rng(rd()); // Mersenne Twister engine
 	std::uniform_int_distribution<int> distribution((-1) * maxi - 1, maxi + 1); // Generator for numbers between -maxi and max
-	for (unsigned long long j = 0; j < n; j++) {
-		x = distribution(rng);
-		numbers.push_back(x);
-	}
-	return numbers;
-}
-std::vector<long long> generateRandomLL(unsigned long long n, long long maxi) {
-	long long x;
-	std::vector<long long> numbers;
-	std::random_device rd;  // Seed for the random number generator
-	std::mt19937 rng(rd()); // Mersenne Twister engine
-	std::uniform_int_distribution<long long> distribution((-1) * maxi - 1, maxi + 1); // Generator for numbers between -maxi and max
 	for (unsigned long long j = 0; j < n; j++) {
 		x = distribution(rng);
 		numbers.push_back(x);
@@ -795,6 +1000,27 @@ bool testingAll(std::vector<int>& heap, std::vector<int>& other1, std::vector<in
 	return true;
 }
 
+void probe_0(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+	heap.test();
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+
+		for (auto& nr : numbers) {
+			heap.insert(nr);
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << name << " time: " << duration.count() << " miliseconds\n";
+
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
 
 void probe_1(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
 	heap.test();
@@ -812,7 +1038,6 @@ void probe_1(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name <<" time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -836,7 +1061,6 @@ void probe_2(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name << " time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -850,23 +1074,20 @@ void probe_3(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	heap.test();
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
+		
+		unsigned long long int n = numbers.size();
 
-		for (unsigned long long int i = 0; i < numbers.size(); i++) {
-			heap.insert(numbers[i]);
+		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
+			heap.insert(numbers[i-1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 10 == 1) {
+			if (i % (n/10) == 0) {
 				heap.pop();
 			}
-		}
-		while (!heap.empty()) {
-			output_heap.push_back(heap.getMin());
-			heap.pop();
 		}
 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name << " time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -881,22 +1102,19 @@ void probe_4(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
 
-		for (unsigned long long int i = 0; i < numbers.size(); i++) {
-			heap.insert(numbers[i]);
+		unsigned long long int n = numbers.size();
+
+		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
+			heap.insert(numbers[i - 1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 100 == 1) {
+			if (i % (n / 100) == 0) {
 				heap.pop();
 			}
-		}
-		while (!heap.empty()) {
-			output_heap.push_back(heap.getMin());
-			heap.pop();
 		}
 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name << " time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -911,24 +1129,17 @@ void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
 
-		for (unsigned long long int i = 0; i < numbers.size(); i++) {
-			heap.insert(numbers[i]);
+		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
+			heap.insert(numbers[i-1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 100 == 1) {
-				for (int j = 0; j < 10; j++) {
-					heap.pop();
-				}
+			if (i % 100 == 0) {
+				heap.pop();
 			}
-		}
-		while (!heap.empty()) {
-			output_heap.push_back(heap.getMin());
-			heap.pop();
 		}
 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name << " time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -943,24 +1154,19 @@ void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
 
-		for (unsigned long long int i = 0; i < numbers.size(); i++) {
-			heap.insert(numbers[i]);
+		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
+			heap.insert(numbers[i-1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 100 == 1) {
-				for (int j = 0; j < 100; j++) {
+			if (i % 100 == 0) {
+				for (int j = 0; j < 10; j++) {
 					heap.pop();
 				}
 			}
-		}
-		while (!heap.empty()) {
-			output_heap.push_back(heap.getMin());
-			heap.pop();
 		}
 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << name << " time: " << duration.count() << " miliseconds\n";
-
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -970,6 +1176,35 @@ void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	}
 }
 
+void probe_7(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+	heap.test();
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+
+		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
+			heap.insert(numbers[i-1]);
+			output_heap.push_back(heap.getMin());
+			if (i % 1000 == 0) {
+				for (int j = 0; j < 1000; j++) {
+					heap.pop();
+				}
+			}
+		}
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << name << " time: " << duration.count() << " miliseconds\n";
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+
+
 // we take a function pointer to a probe as an argument
 void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&, HeapBase&), std::vector<int>& numbers) {
 	std::vector<int> output_heap, output_fibheap, output_heap23, output_heap233;
@@ -977,20 +1212,86 @@ void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&,
 	Fibonacci::FibHeap fibheap;
 	Heap23::TwoThreeHeap heap23;
 
+	std::vector<int> dump_cache;
+	for (auto& nr : numbers) {
+		dump_cache.push_back(nr);
+	}
+
 	probe("Heap   ", numbers, output_heap, heap);
 	probe("FibHeap", numbers, output_fibheap, fibheap);
-	//robe("23Heap ", numbers, output_heap23, heap23);
+	probe("23Heap ", numbers, output_heap23, heap23);
 
 	//if (!testingAll(output_heap, output_fibheap, output_heap23, output_heap233)) { out << "WRONG\n"; }
-	if (!testing2(output_heap, output_fibheap, numbers)) { out << "WRONG\n"; }
+	if (!testingAll(output_heap, output_fibheap, output_heap23, output_heap233)) { out << "WRONG\n"; }
 	else { out << "Successful\n"; }
 }
 
+void func(std::vector<int>& numbers) {
+	std::vector<int> output_heap, output_fibheap, output_heap23, output_heap233;
+	Heap::Heap heap;
+	Fibonacci::FibHeap fibheap;
+	Heap23::TwoThreeHeap heap23;
+	
+	std::vector<int> dump_cache;
+	for (auto& nr : numbers) {
+		dump_cache.push_back(nr);
+	}
 
+	
+	std::priority_queue<int> pq;
+	auto start_time = std::chrono::high_resolution_clock::now();
+
+	for (auto& nr : numbers) {
+		pq.push(nr);
+	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+	out << "pqqq  " << " time: " << duration.count() << " miliseconds\n";
+	
+
+	start_time = std::chrono::high_resolution_clock::now();
+	for (auto& nr : numbers) {
+		heap.insert(nr);
+	}
+	end_time = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+	out << "HEAP  " << " time: " << duration.count() << " miliseconds\n";
+
+	start_time = std::chrono::high_resolution_clock::now();
+	for (auto& nr : numbers) {
+		fibheap.insert(nr);
+	}
+	end_time = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+	out << "FIBHEAP  " << " time: " << duration.count() << " miliseconds\n";
+
+	start_time = std::chrono::high_resolution_clock::now();
+	for (auto& nr : numbers) {
+		heap23.insert(nr);
+	}
+	end_time = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+	out << "23HEAP  " << " time: " << duration.count() << " miliseconds\n";
+
+	out << "\n";
+}
 
 void compareHeaps(unsigned long long int n, int maxi) {
 	std::vector<int> numbers = generateRandomI(n, maxi); // will be random numbers
 	
+	// 0: n insert
+	// 1: n insert, n pop
+	// 2: n ( 1 insert, 1 pop)
+	// 3: n ( 1 insert, 1 in n/10 pop)
+	// 4: n ( 1 insert, 1 in n/100 pop)
+	// 5: n/100  ( 100  insert, 1    pop)
+	// 6: n/100  ( 100  insert, 10   pop)
+	// 7: n/1000 ( 1000 insert, 1000 pop)
+
+
+	out << "\nProbe 0\n";
+	init_probe(probe_0, numbers);
 	out << "\nProbe 1\n";
 	init_probe(probe_1, numbers); 
 	out << "\nProbe 2\n";
@@ -1003,6 +1304,9 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	init_probe(probe_5, numbers);
 	out << "\nProbe 6\n";
 	init_probe(probe_6, numbers);
+	out << "\nProbe 7\n";
+	init_probe(probe_7, numbers);
+
 }
 
 
