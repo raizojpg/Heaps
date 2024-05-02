@@ -16,7 +16,7 @@
 
 std::ifstream fin("nr.txt");
 std::ifstream in("tests.txt");
-std::ofstream out("ip7_2.txt");
+std::ofstream out("results.txt");
 std::ofstream heapout("heapout.txt");
 
 
@@ -1493,13 +1493,15 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	// 0: n insert
 	// 1: n insert, n pop
 	// 2: n ( 1 insert, 1 pop)
-	// 5: n/1000 ( 1000  insert, 1    pop)
-	// 6: n/1000 ( 1000  insert, 100   pop)
-	// 7: n/1000 ( 1000  insert, 1000  pop)
+	// 3: n/1000 ( 1000  insert, 1     pop)
+	// 4: n/1000 ( 1000  insert, 100   pop)
+	// 5: n/1000 ( 1000  insert, 1000  pop)
 	
 	/*
 
 	*/
+	
+	
 	out << "\nProbe 0\n";
 	init_probe(probe_0, numbers);
 	out << "\nProbe 1\n";
@@ -1507,15 +1509,13 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	out << "\nProbe 2\n";
 	init_probe(probe_2, numbers);
 	out << "\nProbe 3\n";
-	init_probe(probe_5, numbers);
+	init_probe(probe_3, numbers);
 	out << "\nProbe 4\n";
 	init_probe(probe_4, numbers);
 	out << "\nProbe 5\n";
 	init_probe(probe_5, numbers);
-	/*
-
-	*/
 	
+
 
 	/*
 	out << "\nMerge \n";
@@ -1527,24 +1527,6 @@ void compareHeaps(unsigned long long int n, int maxi) {
 
 
 int main() {
-
-	/*
-	Heap23::TwoThreeHeap heap;
-	std::vector<int> numbers = generateRandomI(100000, 10000);
-	for (auto& nr : numbers) {
-		heap.insert(nr);
-	}
-	while (!heap.empty()) {
-		heap.pop();
-	}
-
-	return 0;
-	*/
-
-
-	//Fibonacci::tests();
-	//return 0;
-
 
 	unsigned long long int n;
 	int maxi;
