@@ -16,7 +16,7 @@
 
 std::ifstream fin("nr.txt");
 std::ifstream in("tests.txt");
-std::ofstream out("results4.txt");
+std::ofstream out("results5.txt");
 std::ofstream heapout("heapout.txt");
 
 
@@ -273,7 +273,7 @@ namespace Fibonacci {
 		void merge(FibHeap* other)  {
 			if (other != nullptr) {
 				roots->merge(other->roots);
-				if (other->min->value < min->value) { min = other->min; }
+				if (this->min == nullptr || other->min->value < min->value) { min = other->min; }
 			}
 		}
 
@@ -679,7 +679,7 @@ namespace Heap23{
 			}
 		}
 
-		bool merge(TwoThreeHeap& heap) {
+		void merge(TwoThreeHeap& heap) {
 			for (int i = 0; i < heap.max_trees_; ++i) {
 				if (heap.trees[i] != nullptr) {
 					heap.trees[i]->right = nullptr; // disconnect the three from the heap
@@ -690,7 +690,7 @@ namespace Heap23{
 			}
 			nrNodes += heap.nrNodes;
 			heap.nrNodes = 0;
-			return true; // the merge was successful
+			//return true; // the merge was successful
 		}
 
 		void remove(Node* node) {
@@ -946,6 +946,182 @@ namespace Heap23{
 
 }
 
+namespace Leftist {
+
+	template <typename Type>
+	class LeftistNode
+	{
+		LeftistNode* left, * right;
+		Type value;
+		int heap_null_path_length;
+
+	public:
+		// node constructor:
+		LeftistNode(Type const val) : value(val), left(nullptr), right(nullptr), heap_null_path_length(0) {}
+		// the data of the node:
+		Type Value() const
+		{
+			return value;
+		}
+		// checks if the node is empty:
+		bool empty() const
+		{
+			return this == nullptr;
+		}
+
+		LeftistNode<Type>* LeftChild()
+		{
+			return left;
+		}
+		LeftistNode<Type>* RightChild()
+		{
+			return right;
+		}
+
+		void push(LeftistNode<Type>* nodeToInsert, LeftistNode<Type>*& currentHeap)
+		{
+			if (nodeToInsert == nullptr)
+			{
+				// if the node is null, do nothing
+				return;
+			}
+			else if (currentHeap == nullptr)
+			{
+				// if the heap is empty, the nodes becomes the root of the heap:
+				currentHeap = nodeToInsert;
+				return;
+			}
+
+			if (nodeToInsert->value < currentHeap->value)
+			{
+				std::swap(nodeToInsert, currentHeap);
+			}
+
+			if (currentHeap->right == nullptr)
+			{
+				// if the right subtree of the heap is empty, check for the left subtree:
+				if (currentHeap->left == nullptr)
+				{
+					// if the left subtree of the heap is empty, add the node there.
+					currentHeap->left = nodeToInsert;
+				}
+				else
+				{ // else add the node to the right subtree
+					currentHeap->right = nodeToInsert;
+				}
+			}
+			else
+			{
+				push(nodeToInsert, currentHeap->right); // insert into the right subtree
+			}
+
+			// look at the null path length of the left subtree and right subtree
+			// and move the one with the higher length to the left:
+			if (currentHeap->left && currentHeap->right)
+			{
+				if (currentHeap->left->heap_null_path_length < currentHeap->right->heap_null_path_length)
+				{
+					std::swap(currentHeap->left, currentHeap->right);
+				}
+			}
+			// update the heap null path length:
+			if (currentHeap->right)
+				currentHeap->heap_null_path_length = currentHeap->right->heap_null_path_length + 1;
+		}
+
+		void clear()
+		{
+			// clears the heap: firstly the subtrees, then the root itself.
+			if (left != nullptr)
+			{
+				left->clear();
+			}
+			if (right != nullptr)
+			{
+				right->clear();
+			}
+			delete this;
+		}
+	};
+
+	template <typename Type>
+	class LeftistHeap : public HeapBase
+	{
+		LeftistNode<Type>* rootNode;
+		int size;
+
+	public:
+		LeftistHeap() : rootNode(nullptr), size(0) {}
+		LeftistHeap(LeftistHeap const& heap) : rootNode(nullptr), size(heap.size)
+		{
+			if (heap.size == 0) {
+				size = 0;
+				return;
+			}
+
+			else if (heap.size == 1)
+				rootNode = heap.rootNode;
+			else
+			{
+				// BFS in the heap, starting from the root node:
+				std::queue<LeftistNode<Type>*> heapQueue;
+				heapQueue.push_back(heap.rootNode);
+				while (!heapQueue.empty())
+				{
+					LeftistNode<Type>* current = heapQueue.pop_front();
+					rootNode->push(current, rootNode);
+					if (current->left != nullptr) heapQueue.push_back(current->left);
+					if (current->right != nullptr) heapQueue.push_back(current->right);
+				}
+			}
+		}
+
+		void test()  { std::cout << "Left\n"; }
+
+		void insert (const Type val) override
+		{
+			LeftistNode<Type>* newNode = new LeftistNode<Type>(val);
+			rootNode->push(newNode, rootNode);
+			size++;
+		}
+
+		int getMin() override
+		{
+			return rootNode->Value();
+		}
+
+		bool empty() override  { return size == 0; }
+
+		void pop() override  {
+			if (size == 0) {
+				//throw 1; // can't pop because the heap is empty
+			}
+			else {
+				Type result = rootNode->Value(); /* save the root value so we can
+												 delete the node and return it's value afterwards */
+
+				LeftistNode<Type>* temp = rootNode;
+				rootNode = temp->LeftChild();
+				if (temp->RightChild()) {
+					rootNode->push(temp->RightChild(), rootNode);
+				}
+				delete temp;
+				size--;
+				//return result;
+			}
+		}
+		void swap(LeftistHeap& heap) {
+			std::swap(rootNode, heap.rootNode);
+			std::swap(size, heap.size);
+		}
+
+		~LeftistHeap() override = default;
+
+	};
+
+
+}
+
 
 template <typename Type>
 void print(std::vector<Type>& vec) {
@@ -988,12 +1164,12 @@ bool testing2(std::vector<int>& heap, std::vector<int>& other, std::vector<int>&
 }
 
 bool testingAll(std::vector<int>& heap, std::vector<int>& other1, std::vector<int>& other2, std::vector<int>& other3) {
-	if (heap.size() != other1.size() or heap.size() != other2.size()) {
+	if (heap.size() != other1.size() or heap.size() != other2.size() or heap.size() != other3.size()) {
 		heapout << "Size-ul trebuia sa fie " << heap.size() << std::endl;
 		return false;
 	}
 	for (unsigned long long int i = 0; i < heap.size(); i++) {
-		if (heap[i] != other1[i] or heap[i] != other2[i]) {
+		if (heap[i] != other1[i] or heap[i] != other2[i] or heap[i] != other3[i]) {
 			return false;
 		}
 	}
@@ -1132,7 +1308,7 @@ void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
 			heap.insert(numbers[i-1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 100 == 0) {
+			if (i % 1000 == 0) {
 				heap.pop();
 			}
 		}
@@ -1157,8 +1333,8 @@ void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
 			heap.insert(numbers[i-1]);
 			output_heap.push_back(heap.getMin());
-			if (i % 100 == 0) {
-				for (int j = 0; j < 10; j++) {
+			if (i % 1000 == 0) {
+				for (int j = 0; j < 100; j++) {
 					heap.pop();
 				}
 			}
@@ -1207,75 +1383,163 @@ void probe_7(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 
 // we take a function pointer to a probe as an argument
 void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&, HeapBase&), std::vector<int>& numbers) {
-	std::vector<int> output_heap, output_fibheap, output_heap23, output_heap233;
+	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
 	Heap::Heap heap;
 	Fibonacci::FibHeap fibheap;
 	Heap23::TwoThreeHeap heap23;
-
+	Leftist::LeftistHeap<int> leftist;
+	/*
 	std::vector<int> dump_cache;
 	for (auto& nr : numbers) {
 		dump_cache.push_back(nr);
 	}
-
+	*/
 	probe("Heap   ", numbers, output_heap, heap);
 	probe("FibHeap", numbers, output_fibheap, fibheap);
 	probe("23Heap ", numbers, output_heap23, heap23);
+	probe("Leftist", numbers, output_leftist, leftist);
 
-	//if (!testingAll(output_heap, output_fibheap, output_heap23, output_heap233)) { out << "WRONG\n"; }
-	if (!testingAll(output_heap, output_fibheap, output_heap23, output_heap233)) { out << "WRONG\n"; }
+	if (!testingAll(output_heap, output_fibheap, output_heap23, output_leftist)) { out << "WRONG\n"; }
 	else { out << "Successful\n"; }
 }
 
-void func(std::vector<int>& numbers) {
-	std::vector<int> output_heap, output_fibheap, output_heap23, output_heap233;
-	Heap::Heap heap;
-	Fibonacci::FibHeap fibheap;
-	Heap23::TwoThreeHeap heap23;
-	
-	std::vector<int> dump_cache;
-	for (auto& nr : numbers) {
-		dump_cache.push_back(nr);
+
+void mergeFib(std::vector<int>& numbers, std::vector<int>& output_fibheap) {
+	Fibonacci::FibHeap fibheap,aux;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long int i = 0;
+		for (; i < numbers.size() / 2;i++) {
+			fibheap.insert(numbers[i]);
+		}
+		for (; i < numbers.size(); i++) {
+			aux.insert(numbers[i]);
+		}
+		fibheap.merge(&aux);
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "FibHeap" << " time: " << duration.count() << " miliseconds\n";
+
+		while (!fibheap.empty()) {
+			output_fibheap.push_back(fibheap.getMin());
+			fibheap.pop();
+		}
 	}
-
-	
-	std::priority_queue<int> pq;
-	auto start_time = std::chrono::high_resolution_clock::now();
-
-	for (auto& nr : numbers) {
-		pq.push(nr);
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
 	}
-
-	auto end_time = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-	out << "pqqq  " << " time: " << duration.count() << " miliseconds\n";
-	
-
-	start_time = std::chrono::high_resolution_clock::now();
-	for (auto& nr : numbers) {
-		heap.insert(nr);
+	catch (...) {
+		out << "\tnope" << std::endl;
 	}
-	end_time = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-	out << "HEAP  " << " time: " << duration.count() << " miliseconds\n";
-
-	start_time = std::chrono::high_resolution_clock::now();
-	for (auto& nr : numbers) {
-		fibheap.insert(nr);
-	}
-	end_time = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-	out << "FIBHEAP  " << " time: " << duration.count() << " miliseconds\n";
-
-	start_time = std::chrono::high_resolution_clock::now();
-	for (auto& nr : numbers) {
-		heap23.insert(nr);
-	}
-	end_time = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-	out << "23HEAP  " << " time: " << duration.count() << " miliseconds\n";
-
-	out << "\n";
 }
+
+void mergeFibBatch(std::vector<int>& numbers, std::vector<int>& output_fibheap) {
+	Fibonacci::FibHeap fibheap;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long batch = 100;
+		for (unsigned long long int i = 0; i < batch; i++) {
+			Fibonacci::FibHeap aux;
+			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
+				aux.insert(numbers[i*(numbers.size() / batch)+j]);
+			}
+			fibheap.merge(&aux);
+		}
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "FibHeap" << " time: " << duration.count() << " miliseconds\n";
+
+		while (!fibheap.empty()) {
+			output_fibheap.push_back(fibheap.getMin());
+			fibheap.pop();
+		}
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void merge23(std::vector<int>& numbers, std::vector<int>& output_heap23) {
+	Heap23::TwoThreeHeap heap23, aux;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long int i = 0;
+		for (; i < numbers.size() / 2; i++) {
+			heap23.insert(numbers[i]);
+		}
+		for (; i < numbers.size(); i++) {
+			aux.insert(numbers[i]);
+		}
+		heap23.merge(aux);
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Heap23 " << " time: " << duration.count() << " miliseconds\n";
+
+		while (!heap23.empty()) {
+			output_heap23.push_back(heap23.getMin());
+			heap23.pop();
+		}
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void merge23Batch(std::vector<int>& numbers, std::vector<int>& output_heap23) {
+	Heap23::TwoThreeHeap heap23;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long batch = 100;
+		for (unsigned long long int i = 0; i < batch; i++) {
+			Heap23::TwoThreeHeap aux;
+			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
+				aux.insert(numbers[i * (numbers.size() / batch) + j]);
+			}
+			heap23.merge(aux);
+		}
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Heap23 " << " time: " << duration.count() << " miliseconds\n";
+
+		while (!heap23.empty()) {
+			output_heap23.push_back(heap23.getMin());
+			heap23.pop();
+		}
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void init_merge(std::vector<int>& numbers) {
+	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
+	
+	mergeFib(numbers,output_fibheap);
+	merge23(numbers, output_heap23);
+
+	if (!testing2(output_fibheap, output_heap23, numbers)) { out << "WRONG\n"; }
+	else { out << "Successful\n"; }
+}
+
+void init_merge_batch(std::vector<int>& numbers) {
+	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
+
+	mergeFibBatch(numbers, output_fibheap);
+	merge23Batch(numbers, output_heap23);
+
+	if (!testing2(output_fibheap, output_heap23, numbers)) { out << "WRONG\n"; }
+	else { out << "Successful\n"; }
+}
+
 
 void compareHeaps(unsigned long long int n, int maxi) {
 	std::vector<int> numbers = generateRandomI(n, maxi); // will be random numbers
@@ -1283,13 +1547,13 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	// 0: n insert
 	// 1: n insert, n pop
 	// 2: n ( 1 insert, 1 pop)
-	// 3: n ( 1 insert, 1 in n/10 pop)
-	// 4: n ( 1 insert, 1 in n/100 pop)
-	// 5: n/100  ( 100  insert, 1    pop)
-	// 6: n/100  ( 100  insert, 10   pop)
-	// 7: n/1000 ( 1000 insert, 1000 pop)
+	// 3: n ( 1 insert, 1 in n/10 pop)     => n insert, 10  pop
+	// 4: n ( 1 insert, 1 in n/100 pop)	   => n insert, 100 pop
+	// 5: n/1000 ( 1000  insert, 1    pop)
+	// 6: n/1000 ( 1000  insert, 100   pop)
+	// 7: n/1000 ( 1000  insert, 1000  pop)
 
-
+	
 	out << "\nProbe 0\n";
 	init_probe(probe_0, numbers);
 	out << "\nProbe 1\n";
@@ -1306,7 +1570,14 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	init_probe(probe_6, numbers);
 	out << "\nProbe 7\n";
 	init_probe(probe_7, numbers);
+	
 
+	/*
+	out << "\nMerge \n";
+	init_merge(numbers);
+	out << "\nMergeBatched \n";
+	init_merge_batch(numbers);
+	*/
 }
 
 
@@ -1344,15 +1615,8 @@ int main() {
 				if (0 < n && n < INT64_MAX - 2) {
 					if (0 < maxi && maxi < INT32_MAX - 2) {
 
-						out << "\n ---  Int Values --- \n";
-						compareHeaps(n, maxi);
 						out << "\n ------------------------------\n";
-
-					}
-					else if (0 < maxi && maxi < INT64_MAX - 2) {
-
-						out << "\n --- Long Long Values --- \n";
-						
+						compareHeaps(n, maxi);
 						out << "\n ------------------------------\n";
 
 					}
