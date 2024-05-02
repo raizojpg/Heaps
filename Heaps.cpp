@@ -16,7 +16,7 @@
 
 std::ifstream fin("nr.txt");
 std::ifstream in("tests.txt");
-std::ofstream out("results5.txt");
+std::ofstream out("ip7_2.txt");
 std::ofstream heapout("heapout.txt");
 
 
@@ -1250,60 +1250,6 @@ void probe_3(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	heap.test();
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
-		
-		unsigned long long int n = numbers.size();
-
-		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
-			heap.insert(numbers[i-1]);
-			output_heap.push_back(heap.getMin());
-			if (i % (n/10) == 0) {
-				heap.pop();
-			}
-		}
-
-		auto end_time = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-		out << name << " time: " << duration.count() << " miliseconds\n";
-	}
-	catch (const std::bad_alloc& e) {
-		out << "\tyou don't have enough memory" << std::endl;
-	}
-	catch (...) {
-		out << "\tnope" << std::endl;
-	}
-}
-
-void probe_4(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
-	heap.test();
-	try {
-		auto start_time = std::chrono::high_resolution_clock::now();
-
-		unsigned long long int n = numbers.size();
-
-		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
-			heap.insert(numbers[i - 1]);
-			output_heap.push_back(heap.getMin());
-			if (i % (n / 100) == 0) {
-				heap.pop();
-			}
-		}
-
-		auto end_time = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-		out << name << " time: " << duration.count() << " miliseconds\n";
-	}
-	catch (const std::bad_alloc& e) {
-		out << "\tyou don't have enough memory" << std::endl;
-	}
-	catch (...) {
-		out << "\tnope" << std::endl;
-	}
-}
-
-void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
-	heap.test();
-	try {
-		auto start_time = std::chrono::high_resolution_clock::now();
 
 		for (unsigned long long int i = 1; i <= numbers.size(); i++) {
 			heap.insert(numbers[i-1]);
@@ -1325,7 +1271,7 @@ void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	}
 }
 
-void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+void probe_4(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
 	heap.test();
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -1352,7 +1298,7 @@ void probe_6(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	}
 }
 
-void probe_7(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
+void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
 	heap.test();
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
@@ -1547,29 +1493,28 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	// 0: n insert
 	// 1: n insert, n pop
 	// 2: n ( 1 insert, 1 pop)
-	// 3: n ( 1 insert, 1 in n/10 pop)     => n insert, 10  pop
-	// 4: n ( 1 insert, 1 in n/100 pop)	   => n insert, 100 pop
 	// 5: n/1000 ( 1000  insert, 1    pop)
 	// 6: n/1000 ( 1000  insert, 100   pop)
 	// 7: n/1000 ( 1000  insert, 1000  pop)
-
 	
+	/*
+
+	*/
 	out << "\nProbe 0\n";
 	init_probe(probe_0, numbers);
 	out << "\nProbe 1\n";
-	init_probe(probe_1, numbers); 
+	init_probe(probe_1, numbers);
 	out << "\nProbe 2\n";
 	init_probe(probe_2, numbers);
 	out << "\nProbe 3\n";
-	init_probe(probe_3, numbers);
+	init_probe(probe_5, numbers);
 	out << "\nProbe 4\n";
 	init_probe(probe_4, numbers);
 	out << "\nProbe 5\n";
 	init_probe(probe_5, numbers);
-	out << "\nProbe 6\n";
-	init_probe(probe_6, numbers);
-	out << "\nProbe 7\n";
-	init_probe(probe_7, numbers);
+	/*
+
+	*/
 	
 
 	/*
