@@ -11,14 +11,13 @@
 #include <algorithm> // for default sort
 #include <random>	// for random
 #include <chrono>  // for time
-#include <math.h>  // log
+#include <math.h> // log
 #include <limits>
 
 std::ifstream fin("nr.txt");
 std::ifstream in("tests.txt");
-std::ofstream out("results.txt");
+std::ofstream out("m.txt");
 std::ofstream heapout("heapout.txt");
-
 
 // vector with pairs ( N, MAX ) 
 std::vector<std::pair<int, long long int>> tests;
@@ -585,7 +584,6 @@ namespace Heap23{
 		int value_;
 	};
 
-
 	class TwoThreeHeap : public HeapBase {
 	public:
 		TwoThreeHeap(int max_nodes = 1000000000) : nrNodes(0), value(0) {
@@ -1087,13 +1085,15 @@ namespace Leftist {
 
 		int getMin() override
 		{
-			return rootNode->Value();
+			if (rootNode != nullptr) {
+				return rootNode->Value();
+			}
 		}
 
 		bool empty() override  { return size == 0; }
 
 		void pop() override  {
-			if (size == 0) {
+			if (size == 0 ) {
 				//throw 1; // can't pop because the heap is empty
 			}
 			else {
@@ -1110,15 +1110,28 @@ namespace Leftist {
 				//return result;
 			}
 		}
+		
 		void swap(LeftistHeap& heap) {
 			std::swap(rootNode, heap.rootNode);
 			std::swap(size, heap.size);
+		}
+		
+		LeftistNode<Type>* GetRoot() {
+			return rootNode;
+		}
+
+		void merge(LeftistHeap& other) {
+			if (other.size > 0) {
+				rootNode->push(other.GetRoot(), rootNode);
+				size += other.size;
+				other.size = 0;
+				other.rootNode = nullptr;
+			}
 		}
 
 		~LeftistHeap() override = default;
 
 	};
-
 
 }
 
@@ -1175,6 +1188,8 @@ bool testingAll(std::vector<int>& heap, std::vector<int>& other1, std::vector<in
 	}
 	return true;
 }
+
+
 
 void probe_0(std::string name, std::vector<int>& numbers, std::vector<int>& output_heap, HeapBase& heap) {
 	heap.test();
@@ -1325,8 +1340,6 @@ void probe_5(std::string name, std::vector<int>& numbers, std::vector<int>& outp
 	}
 }
 
-
-
 // we take a function pointer to a probe as an argument
 void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&, HeapBase&), std::vector<int>& numbers) {
 	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
@@ -1349,6 +1362,65 @@ void init_probe(void (*probe)(std::string, std::vector<int>&, std::vector<int>&,
 	else { out << "Successful\n"; }
 }
 
+
+
+void mergeBin(std::vector<int>& numbers, std::vector<int>& output_heap) {
+	Heap::Heap heap, aux;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long int i = 0;
+		for (; i < numbers.size() / 2; i++) {
+			heap.insert(numbers[i]);
+		}
+		for (; i < numbers.size(); i++) {
+			aux.insert(numbers[i]);
+		}
+		heap.merge(aux);
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Heap" << " time: " << duration.count() << " miliseconds\n";
+
+		while (!heap.empty()) {
+			output_heap.push_back(heap.getMin());
+			heap.pop();
+		}
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void mergeBinBatch(std::vector<int>& numbers, std::vector<int>& output_heap, unsigned long long batch) {
+	Heap::Heap heap;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		for (unsigned long long int i = 0; i < batch; i++) {
+			Heap::Heap aux;
+			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
+				aux.insert(numbers[i * (numbers.size() / batch) + j]);
+			}
+			heap.merge(aux);
+		}
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Heap" << " time: " << duration.count() << " miliseconds\n";
+		
+		while (!heap.empty()) {
+			output_heap.push_back(heap.getMin());
+			heap.pop();
+		}
+		
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
 
 void mergeFib(std::vector<int>& numbers, std::vector<int>& output_fibheap) {
 	Fibonacci::FibHeap fibheap,aux;
@@ -1379,11 +1451,10 @@ void mergeFib(std::vector<int>& numbers, std::vector<int>& output_fibheap) {
 	}
 }
 
-void mergeFibBatch(std::vector<int>& numbers, std::vector<int>& output_fibheap) {
+void mergeFibBatch(std::vector<int>& numbers, std::vector<int>& output_fibheap, unsigned long long batch) {
 	Fibonacci::FibHeap fibheap;
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
-		unsigned long long batch = 100;
 		for (unsigned long long int i = 0; i < batch; i++) {
 			Fibonacci::FibHeap aux;
 			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
@@ -1394,11 +1465,12 @@ void mergeFibBatch(std::vector<int>& numbers, std::vector<int>& output_fibheap) 
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << "FibHeap" << " time: " << duration.count() << " miliseconds\n";
-
+		
 		while (!fibheap.empty()) {
 			output_fibheap.push_back(fibheap.getMin());
 			fibheap.pop();
 		}
+		
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -1437,11 +1509,10 @@ void merge23(std::vector<int>& numbers, std::vector<int>& output_heap23) {
 	}
 }
 
-void merge23Batch(std::vector<int>& numbers, std::vector<int>& output_heap23) {
+void merge23Batch(std::vector<int>& numbers, std::vector<int>& output_heap23, unsigned long long batch) {
 	Heap23::TwoThreeHeap heap23;
 	try {
 		auto start_time = std::chrono::high_resolution_clock::now();
-		unsigned long long batch = 100;
 		for (unsigned long long int i = 0; i < batch; i++) {
 			Heap23::TwoThreeHeap aux;
 			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
@@ -1452,11 +1523,70 @@ void merge23Batch(std::vector<int>& numbers, std::vector<int>& output_heap23) {
 		auto end_time = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 		out << "Heap23 " << " time: " << duration.count() << " miliseconds\n";
-
+		
 		while (!heap23.empty()) {
 			output_heap23.push_back(heap23.getMin());
 			heap23.pop();
 		}
+		
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void mergeLeft(std::vector<int>& numbers, std::vector<int>& output_leftist) {
+	Leftist::LeftistHeap<int> leftist, aux;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		unsigned long long int i = 0;
+		for (; i < numbers.size() / 2; i++) {
+			leftist.insert(numbers[i]);
+		}
+		for (; i < numbers.size(); i++) {
+			aux.insert(numbers[i]);
+		}
+		leftist.merge(aux);
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Leftist" << " time: " << duration.count() << " miliseconds\n";
+
+		while (!leftist.empty()) {
+			output_leftist.push_back(leftist.getMin());
+			leftist.pop();
+		}
+	}
+	catch (const std::bad_alloc& e) {
+		out << "\tyou don't have enough memory" << std::endl;
+	}
+	catch (...) {
+		out << "\tnope" << std::endl;
+	}
+}
+
+void mergeLeftBatch(std::vector<int>& numbers, std::vector<int>& output_leftist, unsigned long long batch) {
+	Leftist::LeftistHeap<int> leftist;
+	try {
+		auto start_time = std::chrono::high_resolution_clock::now();
+		for (unsigned long long int i = 0; i < batch; i++) {
+			Leftist::LeftistHeap<int> aux;
+			for (unsigned long long int j = 0; j < numbers.size() / batch; j++) {
+				aux.insert(numbers[i * (numbers.size() / batch) + j]);
+			}
+			leftist.merge(aux);
+		}
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+		out << "Leftist" << " time: " << duration.count() << " miliseconds\n";
+		
+		while (!leftist.empty()) {
+			output_leftist.push_back(leftist.getMin());
+			leftist.pop();
+		}
+		
 	}
 	catch (const std::bad_alloc& e) {
 		out << "\tyou don't have enough memory" << std::endl;
@@ -1469,20 +1599,31 @@ void merge23Batch(std::vector<int>& numbers, std::vector<int>& output_heap23) {
 void init_merge(std::vector<int>& numbers) {
 	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
 	
-	mergeFib(numbers,output_fibheap);
+	mergeBin(numbers, output_heap);
+	std::cout << output_heap.size() << std::endl;
+	mergeFib(numbers, output_fibheap);
+	std::cout << output_fibheap.size() << std::endl;
 	merge23(numbers, output_heap23);
+	std::cout << output_heap23.size() << std::endl;
+	mergeLeft(numbers, output_leftist);
+	std::cout << output_leftist.size() << std::endl;
 
-	if (!testing2(output_fibheap, output_heap23, numbers)) { out << "WRONG\n"; }
+	if (!testingAll(output_heap, output_fibheap, output_heap23, output_leftist)) { out << "WRONG\n"; }
 	else { out << "Successful\n"; }
 }
 
-void init_merge_batch(std::vector<int>& numbers) {
+void init_merge_batch(std::vector<int>& numbers, unsigned long long batch) {
 	std::vector<int> output_heap, output_fibheap, output_heap23, output_leftist;
+	mergeBinBatch(numbers, output_heap, batch);
+	std::cout << output_heap.size() << std::endl;
+	mergeFibBatch(numbers, output_fibheap,batch);
+	std::cout << output_fibheap.size() << std::endl;
+	merge23Batch(numbers, output_heap23,batch);
+	std::cout << output_heap23.size() << std::endl;
+	mergeLeftBatch(numbers, output_leftist,batch);
+	std::cout << output_leftist.size() << std::endl;
 
-	mergeFibBatch(numbers, output_fibheap);
-	merge23Batch(numbers, output_heap23);
-
-	if (!testing2(output_fibheap, output_heap23, numbers)) { out << "WRONG\n"; }
+	if (!testingAll(output_heap, output_fibheap, output_heap23, output_leftist)) { out << "WRONG\n"; }
 	else { out << "Successful\n"; }
 }
 
@@ -1497,13 +1638,8 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	// 4: n/1000 ( 1000  insert, 100   pop)
 	// 5: n/1000 ( 1000  insert, 1000  pop)
 	
-	/*
-
-	*/
-	
-	
 	out << "\nProbe 0\n";
-	init_probe(probe_0, numbers);
+	init_probe(probe_0, numbers);	
 	out << "\nProbe 1\n";
 	init_probe(probe_1, numbers);
 	out << "\nProbe 2\n";
@@ -1515,14 +1651,13 @@ void compareHeaps(unsigned long long int n, int maxi) {
 	out << "\nProbe 5\n";
 	init_probe(probe_5, numbers);
 	
-
-
-	/*
 	out << "\nMerge \n";
 	init_merge(numbers);
-	out << "\nMergeBatched \n";
-	init_merge_batch(numbers);
-	*/
+	out << "\nMergeBatched 1000 \n";
+	init_merge_batch(numbers,1000); 
+	out << "\nMergeBatched 10000 \n";
+	init_merge_batch(numbers, 10000);
+	
 }
 
 
