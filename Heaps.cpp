@@ -8,16 +8,17 @@
 #include <vector>
 #include <queue>
 #include <string>
-#include <algorithm> // for default sort
-#include <random>	// for random
+#include <algorithm> 
+#include <random>   // for random
 #include <chrono>  // for time
 #include <math.h> // log
 #include <limits>
 
-std::ifstream fin("nr.txt");
+std::ifstream fin("nr.txt"); 	      // for debug
+std::ofstream heapout("heapout.txt"); // for debug
+
 std::ifstream in("tests.txt");
-std::ofstream out("m.txt");
-std::ofstream heapout("heapout.txt");
+std::ofstream out("results.txt");
 
 // vector with pairs ( N, MAX ) 
 std::vector<std::pair<int, long long int>> tests;
