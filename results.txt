@@ -1,0 +1,289 @@
+
+ --- TEST NR: 0 	N = 1000	MAX = 10000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 1 miliseconds
+FibHeap time: 0 miliseconds
+23Heap  time: 0 miliseconds
+Leftist time: 0 miliseconds
+Successful
+
+Probe 1
+Heap    time: 3 miliseconds
+FibHeap time: 5 miliseconds
+23Heap  time: 1 miliseconds
+Leftist time: 1 miliseconds
+Successful
+
+Probe 2
+Heap    time: 2 miliseconds
+FibHeap time: 2 miliseconds
+23Heap  time: 0 miliseconds
+Leftist time: 0 miliseconds
+Successful
+
+Probe 3
+Heap    time: 0 miliseconds
+FibHeap time: 1 miliseconds
+23Heap  time: 0 miliseconds
+Leftist time: 0 miliseconds
+Successful
+
+Probe 4
+Heap    time: 1 miliseconds
+FibHeap time: 1 miliseconds
+23Heap  time: 0 miliseconds
+Leftist time: 0 miliseconds
+Successful
+
+Probe 5
+Heap    time: 3 miliseconds
+FibHeap time: 5 miliseconds
+23Heap  time: 1 miliseconds
+Leftist time: 1 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 1 	N = 10000	MAX = 100000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 5 miliseconds
+FibHeap time: 2 miliseconds
+23Heap  time: 3 miliseconds
+Leftist time: 3 miliseconds
+Successful
+
+Probe 1
+Heap    time: 44 miliseconds
+FibHeap time: 67 miliseconds
+23Heap  time: 16 miliseconds
+Leftist time: 25 miliseconds
+Successful
+
+Probe 2
+Heap    time: 25 miliseconds
+FibHeap time: 23 miliseconds
+23Heap  time: 5 miliseconds
+Leftist time: 5 miliseconds
+Successful
+
+Probe 3
+Heap    time: 6 miliseconds
+FibHeap time: 8 miliseconds
+23Heap  time: 6 miliseconds
+Leftist time: 6 miliseconds
+Successful
+
+Probe 4
+Heap    time: 15 miliseconds
+FibHeap time: 16 miliseconds
+23Heap  time: 10 miliseconds
+Leftist time: 7 miliseconds
+Successful
+
+Probe 5
+Heap    time: 37 miliseconds
+FibHeap time: 60 miliseconds
+23Heap  time: 16 miliseconds
+Leftist time: 16 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 2 	N = 100000	MAX = 1000000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 48 miliseconds
+FibHeap time: 24 miliseconds
+23Heap  time: 31 miliseconds
+Leftist time: 45 miliseconds
+Successful
+
+Probe 1
+Heap    time: 563 miliseconds
+FibHeap time: 848 miliseconds
+23Heap  time: 205 miliseconds
+Leftist time: 236 miliseconds
+Successful
+
+Probe 2
+Heap    time: 229 miliseconds
+FibHeap time: 214 miliseconds
+23Heap  time: 51 miliseconds
+Leftist time: 56 miliseconds
+Successful
+
+Probe 3
+Heap    time: 68 miliseconds
+FibHeap time: 116 miliseconds
+23Heap  time: 74 miliseconds
+Leftist time: 62 miliseconds
+Successful
+
+Probe 4
+Heap    time: 113 miliseconds
+FibHeap time: 130 miliseconds
+23Heap  time: 81 miliseconds
+Leftist time: 68 miliseconds
+Successful
+
+Probe 5
+Heap    time: 363 miliseconds
+FibHeap time: 494 miliseconds
+23Heap  time: 121 miliseconds
+Leftist time: 142 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 3 	N = 1000000	MAX = 10000000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 495 miliseconds
+FibHeap time: 273 miliseconds
+23Heap  time: 297 miliseconds
+Leftist time: 431 miliseconds
+Successful
+
+Probe 1
+Heap    time: 5286 miliseconds
+FibHeap time: 10192 miliseconds
+23Heap  time: 2441 miliseconds
+Leftist time: 3341 miliseconds
+Successful
+
+Probe 2
+Heap    time: 2289 miliseconds
+FibHeap time: 2077 miliseconds
+23Heap  time: 537 miliseconds
+Leftist time: 555 miliseconds
+Successful
+
+Probe 3
+Heap    time: 777 miliseconds
+FibHeap time: 787 miliseconds
+23Heap  time: 759 miliseconds
+Leftist time: 618 miliseconds
+Successful
+
+Probe 4
+Heap    time: 1240 miliseconds
+FibHeap time: 1333 miliseconds
+23Heap  time: 830 miliseconds
+Leftist time: 709 miliseconds
+Successful
+
+Probe 5
+Heap    time: 3768 miliseconds
+FibHeap time: 4917 miliseconds
+23Heap  time: 1216 miliseconds
+Leftist time: 1430 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 4 	N = 10000000	MAX = 100000000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 1322 miliseconds
+FibHeap time: 1543 miliseconds
+23Heap  time: 2918 miliseconds
+Leftist time: 4409 miliseconds
+Successful
+
+Probe 1
+Heap    time: 23567 miliseconds
+FibHeap time: 80221 miliseconds
+23Heap  time: 27381 miliseconds
+Leftist time: 44118 miliseconds
+Successful
+
+Probe 2
+Heap    time: 9097 miliseconds
+FibHeap time: 12619 miliseconds
+23Heap  time: 2752 miliseconds
+Leftist time: 3279 miliseconds
+Successful
+
+Probe 3
+Heap    time: 3189 miliseconds
+FibHeap time: 5477 miliseconds
+23Heap  time: 5593 miliseconds
+Leftist time: 4018 miliseconds
+Successful
+
+Probe 4
+Heap    time: 4044 miliseconds
+FibHeap time: 6324 miliseconds
+23Heap  time: 4638 miliseconds
+Leftist time: 4580 miliseconds
+Successful
+
+Probe 5
+Heap    time: 12918 miliseconds
+FibHeap time: 21566 miliseconds
+23Heap  time: 6656 miliseconds
+Leftist time: 5944 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 5 	N = 10000000	MAX = 100000
+
+ ------------------------------
+
+Probe 0
+Heap    time: 1298 miliseconds
+FibHeap time: 1592 miliseconds
+23Heap  time: 2163 miliseconds
+Leftist time: 3299 miliseconds
+Successful
+
+Probe 1
+Heap    time: 23317 miliseconds
+FibHeap time: 76548 miliseconds
+23Heap  time: 27305 miliseconds
+Leftist time: 41987 miliseconds
+Successful
+
+Probe 2
+Heap    time: 8975 miliseconds
+FibHeap time: 12748 miliseconds
+23Heap  time: 2806 miliseconds
+Leftist time: 3053 miliseconds
+Successful
+
+Probe 3
+Heap    time: 2190 miliseconds
+FibHeap time: 3987 miliseconds
+23Heap  time: 4119 miliseconds
+Leftist time: 4486 miliseconds
+Successful
+
+Probe 4
+Heap    time: 3944 miliseconds
+FibHeap time: 5999 miliseconds
+23Heap  time: 4736 miliseconds
+Leftist time: 3791 miliseconds
+Successful
+
+Probe 5
+Heap    time: 12873 miliseconds
+FibHeap time: 21056 miliseconds
+23Heap  time: 6375 miliseconds
+Leftist time: 5512 miliseconds
+Successful
+
+ ------------------------------
+

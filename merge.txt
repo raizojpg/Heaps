@@ -1,0 +1,114 @@
+
+ --- TEST NR: 0 	N = 1000	MAX = 10000
+
+ ------------------------------
+
+Merge 
+Heap time: 1 miliseconds
+FibHeap time: 0 miliseconds
+Heap23  time: 0 miliseconds
+Leftist time: 0 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 1 	N = 10000	MAX = 100000
+
+ ------------------------------
+
+Merge 
+Heap time: 17 miliseconds
+FibHeap time: 4 miliseconds
+Heap23  time: 11 miliseconds
+Leftist time: 4 miliseconds
+Successful
+
+MergeBatched 1000 
+Heap time: 15 miliseconds
+FibHeap time: 1 miliseconds
+Heap23  time: 3 miliseconds
+Leftist time: 1 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 2 	N = 100000	MAX = 1000000
+
+ ------------------------------
+
+Merge 
+Heap time: 236 miliseconds
+FibHeap time: 30 miliseconds
+Heap23  time: 41 miliseconds
+Leftist time: 30 miliseconds
+Successful
+
+MergeBatched 1000 
+Heap time: 141 miliseconds
+FibHeap time: 37 miliseconds
+Heap23  time: 111 miliseconds
+Leftist time: 76 miliseconds
+Successful
+
+MergeBatched 10000 
+Heap time: 225 miliseconds
+FibHeap time: 27 miliseconds
+Heap23  time: 39 miliseconds
+Leftist time: 33 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 3 	N = 1000000	MAX = 10000000
+
+ ------------------------------
+
+Merge 
+Heap time: 1615 miliseconds
+FibHeap time: 210 miliseconds
+Heap23  time: 263 miliseconds
+Leftist time: 317 miliseconds
+Successful
+
+MergeBatched 1000 
+Heap time: 1690 miliseconds
+FibHeap time: 132 miliseconds
+Heap23  time: 175 miliseconds
+Leftist time: 161 miliseconds
+Successful
+
+MergeBatched 10000 
+Heap time: 1479 miliseconds
+FibHeap time: 135 miliseconds
+Heap23  time: 183 miliseconds
+Leftist time: 152 miliseconds
+Successful
+
+ ------------------------------
+
+ --- TEST NR: 4 	N = 10000000	MAX = 100000000
+
+ ------------------------------
+
+Merge 
+Heap time  : 12247 miliseconds
+FibHeap time: 1810 miliseconds
+Heap23  time: 2415 miliseconds
+Leftist time: 6783 miliseconds
+Successful
+
+MergeBatched 1000 
+Heap time  : 11964 miliseconds
+FibHeap time: 1496 miliseconds
+Heap23  time: 1812 miliseconds
+Leftist time: 2541 miliseconds
+Successful
+
+MergeBatched 10000
+Heap time  : 10788 miliseconds
+FibHeap time: 1327 miliseconds
+Heap23  time: 1895 miliseconds
+Leftist time: 2068 miliseconds
+Successful
+
+ ------------------------------
